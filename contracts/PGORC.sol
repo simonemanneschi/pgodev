@@ -59,6 +59,7 @@ contract PGORC {
 
   /**
    * @dev fallback function ***DO NOT OVERRIDE***
+   * ogni rc deve avere max cap dopo restituisce i token
    */
   function () external payable {
     buyTokens(msg.sender);
