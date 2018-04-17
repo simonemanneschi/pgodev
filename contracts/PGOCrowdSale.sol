@@ -16,17 +16,21 @@ import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
  * behavior.
  */
 
-contract Crowdsale {
+contract PGOCrowdsale {
   using SafeMath for uint256;
 
+  uint256 public constant ICO_SUPPLY_WEI = 10000;
+
+  uint256 public constant RC_SUPPLY_WEI = 7000;
+
+  //How many token units a buyer gets per wei
+  uint256 public constant rate = 666/1000000000000000000;
+
   // The token being sold
-  ERC20 public token;
+  PGO public token;
 
   // Address where funds are collected
   address public wallet;
-
-  // How many token units a buyer gets per wei
-  uint256 public rate;
 
   // Amount of wei raised
   uint256 public weiRaised;
@@ -45,7 +49,7 @@ contract Crowdsale {
    * @param _wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
-  function Crowdsale(uint256 _rate, address _wallet, ERC20 _token) public {
+  function PGOCrowdsale(uint256 _rate, address _wallet, ERC20 _token) public {
     require(_rate > 0);
     require(_wallet != address(0));
     require(_token != address(0));
@@ -154,5 +158,12 @@ contract Crowdsale {
    */
   function _forwardFunds() internal {
     wallet.transfer(msg.value);
+  }
+
+
+  function RCPurchase(address buyer, uint256 amount) public onlyWhitelisted {
+
+    balances[buyer] = amount;
+    emit Transfer(0x0, buyer, amount);
   }
 }

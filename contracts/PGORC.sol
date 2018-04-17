@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import "./PGO.sol";
+import "./PGOCrowdSale.sol";
 import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
 
 /**
@@ -19,14 +19,14 @@ import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
 contract PGORC {
   using SafeMath for uint256;
 
-  // The token being sold
-  PGO public token;
+  // The crowdsale contract
+  PGOCrowdSale public crowdSale;
 
   // Address where funds are collected
-  address public wallet;
+  //address public wallet;
 
   // How many token units a buyer gets per wei
-  uint256 public rate = 1;
+  uint256 public constant rate = 666/1000000000000000000;
 
   // Amount of wei raised
   uint256 public weiRaised;
@@ -44,13 +44,13 @@ contract PGORC {
    * @param _wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
-  function PGORC(address _wallet, PGO _token) public {
-    require(_wallet != address(0));
+  function PGORC(PGOCrowdSale _token) public {
+    //require(_wallet != address(0));
     require(_token != address(0));
 
     //rate = _rate;
-    wallet = _wallet;
-    token = _token;
+    //wallet = _wallet;
+    crowdSale = _token;
   }
 
   // -----------------------------------------
@@ -118,7 +118,7 @@ contract PGORC {
    * @param _tokenAmount Number of tokens to be emitted
    */
   function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal {
-    token.transfer(_beneficiary, _tokenAmount);
+    token.RCPurchase(_beneficiary, _tokenAmount);
   }
 
   /**

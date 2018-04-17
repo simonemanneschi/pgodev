@@ -1,10 +1,17 @@
-//var pgoRC = artifacts.require("./PGORC.sol");
+var pgoRC = artifacts.require("./PGORC.sol");
 var pgo = artifacts.require("./PGO.sol");
 
 module.exports = function(deployer) {
   //deployer.deploy(ConvertLib);
   //deployer.link(ConvertLib, MetaCoin);
-  deployer.deploy(pgo);
+  deployer.deploy(pgo).then(function(){
+    //console.log(pgo);
+    deployer.deploy(pgoRC, "0x08902F0E5D7F04968dEbD7f1e1269939D349738A",pgo.address).then(function(){
+      //console.log(pgoRC);
+      //pgo.addAddressesToWhitelist(pgoRC.address);
+    });
+  });
+  //deployer.deploy(pgoRC);
   //deployer.deploy(pgoCrowd);
 };
 
