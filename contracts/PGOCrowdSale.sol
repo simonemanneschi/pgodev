@@ -1,11 +1,12 @@
 pragma solidity ^0.4.18;
 
 import "./PGO.sol";
-import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
+import "./SafeMath.sol";
+import "./Whitelist.sol";
 
 /**
- * @title Crowdsale
- * @dev Crowdsale is a base contract for managing a token crowdsale,
+ * @title PGOCrowdsale
+ * @dev PGOCrowdsale is a base contract for managing a token crowdsale,
  * allowing investors to purchase tokens with ether. This contract implements
  * such functionality in its most fundamental form and can be extended to provide additional
  * functionality and/or custom behavior.
@@ -16,15 +17,18 @@ import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
  * behavior.
  */
 
-contract PGOCrowdsale {
+contract PGOCrowdsale is Whitelist {
   using SafeMath for uint256;
 
-  uint256 public constant ICO_SUPPLY_WEI = 10000;
+  uint8 public constant decimals = 18; // solium-disable-line uppercase
+  
+  uint256 public constant ICO_SUPPLY_TOKEN = 10000  * (10 ** uint256(decimals));
 
-  uint256 public constant RC_SUPPLY_WEI = 7000;
+  uint256 public constant RC_SUPPLY_TOKEN = 7000  * (10 ** uint256(decimals));
 
-  //How many token units a buyer gets per wei
-  uint256 public constant rate = 666/1000000000000000000;
+  //How many token units a buyer gets per ether
+  uint256 public constant rate = 833 * (10 ** uint256(decimals));
+  
 
   // The token being sold
   PGO public token;
@@ -33,8 +37,14 @@ contract PGOCrowdsale {
   address public wallet;
 
   // Amount of wei raised
-  uint256 public weiRaised;
-
+  uint256 public weiRaisedICO;
+  //amount of wei raised during reservation contracts
+  uint256 public weiRaisedRC;
+  //amount of token raised
+  uint256 public tokenRaisedICO;
+  //amount of token raised
+  uint256 public tokenRaisedRC;
+  
   /**
    * Event for token purchase logging
    * @param purchaser who paid for the tokens
@@ -45,19 +55,18 @@ contract PGOCrowdsale {
   event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
   /**
-   * @param _rate Number of token units a buyer gets per wei
    * @param _wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
-  function PGOCrowdsale(uint256 _rate, address _wallet, ERC20 _token) public {
-    require(_rate > 0);
+  function PGOCrowdsale(address _wallet, PGO _token) public {
     require(_wallet != address(0));
     require(_token != address(0));
 
-    rate = _rate;
     wallet = _wallet;
     token = _token;
   }
+  
+  
 
   // -----------------------------------------
   // Crowdsale external interface
@@ -83,10 +92,11 @@ contract PGOCrowdsale {
     uint256 tokens = _getTokenAmount(weiAmount);
 
     // update state
-    weiRaised = weiRaised.add(weiAmount);
+    weiRaisedICO = weiRaisedICO.add(weiAmount);
+    tokenRaisedICO = tokenRaisedICO.add(tokens);
 
     _processPurchase(_beneficiary, tokens);
-    TokenPurchase(msg.sender, _beneficiary, weiAmount, tokens);
+    emit TokenPurchase(msg.sender, _beneficiary, weiAmount, tokens);
 
     _updatePurchasingState(_beneficiary, weiAmount);
 
@@ -150,7 +160,8 @@ contract PGOCrowdsale {
    * @return Number of tokens that can be purchased with the specified _weiAmount
    */
   function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
-    return _weiAmount.mul(rate);
+    uint256 _weiRate = rate / (10 ** uint256(decimals));
+    return _weiAmount.mul(_weiRate);
   }
 
   /**
@@ -160,10 +171,32 @@ contract PGOCrowdsale {
     wallet.transfer(msg.value);
   }
 
+  /**
+   * @dev low level token purchase only called by reservation contracts ***DO NOT OVERRIDE***
+   * @param buyer Address performing the token purchase
+   * @param tokenAmount uint256 amount of token purchased
+   */
+  function RCPurchase(address buyer, uint256 tokenAmount) public payable onlyWhitelisted {
+    require(buyer != address(0));
+    require(tokenAmount != 0);
+    require(msg.value !=0 );
+    require(tokenRaisedRC.add(tokenAmount) < RC_SUPPLY_TOKEN);
+    // set token amount from reservation contract
+    uint256 tokens = tokenAmount;
+    uint256 weiAmount = msg.value;
+    // update state
+    //weiRaisedICO = weiRaisedICO.add(weiAmount);
+    // update wei raised RC
+    weiRaisedRC = weiRaisedRC.add(weiAmount);
+    
+    tokenRaisedRC = tokenRaisedRC.add(tokenAmount);
 
-  function RCPurchase(address buyer, uint256 amount) public onlyWhitelisted {
+    _processPurchase(buyer, tokens);
+    emit TokenPurchase(msg.sender, buyer, weiAmount, tokens);
 
-    balances[buyer] = amount;
-    emit Transfer(0x0, buyer, amount);
+    _updatePurchasingState(buyer, weiAmount);
+
+    _forwardFunds();
+    _postValidatePurchase(buyer, weiAmount);
   }
 }

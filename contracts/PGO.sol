@@ -1,16 +1,17 @@
 pragma solidity ^0.4.4;
 
-import "../node_modules/zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
-import "../node_modules/zeppelin-solidity/contracts/ownership/Whitelist.sol";
-import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
+import "./StandardToken.sol";
+import "./Ownable.sol";
+import "./SafeMath.sol";
+
 /**
- * @title RockerCoin
+ * @title ParkingGo
  * @dev Very simple ERC20 Token example, where all tokens are pre-assigned to the creator.
  * Note they can later distribute these tokens as they wish using `transfer` and other
  * `StandardToken` functions.
  */
 
-contract PGO is StandardToken, Whitelist {
+contract PGO is StandardToken, Ownable {
 using SafeMath for uint256;
   string public constant name = "ParkingGo"; // solium-disable-line uppercase
   string public constant symbol = "PGO"; // solium-disable-line uppercase
@@ -18,9 +19,7 @@ using SafeMath for uint256;
 
   uint256 public constant INITIAL_SUPPLY = 100000 * (10 ** uint256(decimals));
 
-  uint256 public constant ICO_SUPPLY = 10000 * (10 ** uint256(decimals));
-
-  uint256 public constant RC_SUPPLY = 7000 * (10 ** uint256(decimals));
+  uint256 public constant ICO_SUPPLY = 17000 * (10 ** uint256(decimals));
 
   //Pre-assignment token distribution
   uint256 public constant PARTNER_SUPPLY = 10000 * (10 ** uint256(decimals));
@@ -29,6 +28,10 @@ using SafeMath for uint256;
   uint256 public constant FONDOLIQ_SUPPLY = 17000 * (10 ** uint256(decimals));
   uint256 public constant FONDOAZ_SUPPLY = 35000 * (10 ** uint256(decimals));
   uint256 public constant PRESALE_SUPPLY = 8000 * (10 ** uint256(decimals));
+  
+  //Crowdsale token contract
+  address Crowdsale;
+  
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
@@ -60,9 +63,14 @@ using SafeMath for uint256;
     balances[Pre3] = PRESALE_SUPPLY;
     emit Transfer(0x0, Pre3, PRESALE_SUPPLY);
     
-    balances[msg.sender] = ICO_SUPPLY.add(RC_SUPPLY);
+    balances[msg.sender] = ICO_SUPPLY;
     emit Transfer(0x0, msg.sender, INITIAL_SUPPLY);
   }
+
+    function SetCrowdSaleAddress(address _crowdSaleContractAddress) public onlyOwner{
+        Crowdsale = _crowdSaleContractAddress;
+        transfer(Crowdsale,ICO_SUPPLY);
+    }
 
  
 

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
 import "./PGOCrowdSale.sol";
-import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
+import "./SafeMath.sol";
 
 /**
  * @title PGOCrowdsale
@@ -16,18 +16,18 @@ import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
  * behavior.
  */
 
-contract PGORC {
+contract PGORC { 
   using SafeMath for uint256;
 
   // The crowdsale contract
-  PGOCrowdSale public crowdSale;
+  PGOCrowdsale public crowdSale;
 
   // Address where funds are collected
-  //address public wallet;
+  address public wallet;
+  uint8 public constant decimals = 18; // solium-disable-line uppercase
 
-  // How many token units a buyer gets per wei
-  uint256 public constant rate = 666/1000000000000000000;
-
+  //How many token units a buyer gets per ether
+  uint256 public constant rate = 1041 * (10 ** uint256(decimals));
   // Amount of wei raised
   uint256 public weiRaised;
 
@@ -41,16 +41,15 @@ contract PGORC {
   event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
   /**
-   * @param _wallet Address where collected funds will be forwarded to
-   * @param _token Address of the token being sold
+   * @param _crowdsaleAddress Address of crowdsale contract
    */
-  function PGORC(PGOCrowdSale _token) public {
+  function PGORC(PGOCrowdsale _crowdsaleAddress) public {
     //require(_wallet != address(0));
-    require(_token != address(0));
+    require(_crowdsaleAddress != address(0));
 
     //rate = _rate;
     //wallet = _wallet;
-    crowdSale = _token;
+    crowdSale = _crowdsaleAddress;
   }
 
   // -----------------------------------------
@@ -59,7 +58,6 @@ contract PGORC {
 
   /**
    * @dev fallback function ***DO NOT OVERRIDE***
-   * ogni rc deve avere max cap dopo restituisce i token
    */
   function () external payable {
     buyTokens(msg.sender);
@@ -81,11 +79,11 @@ contract PGORC {
     weiRaised = weiRaised.add(weiAmount);
 
     _processPurchase(_beneficiary, tokens);
-    TokenPurchase(msg.sender, _beneficiary, weiAmount, tokens);
+    emit TokenPurchase(msg.sender, _beneficiary, weiAmount, tokens);
 
     _updatePurchasingState(_beneficiary, weiAmount);
 
-    _forwardFunds();
+    //_forwardFunds();
     _postValidatePurchase(_beneficiary, weiAmount);
   }
 
@@ -118,7 +116,7 @@ contract PGORC {
    * @param _tokenAmount Number of tokens to be emitted
    */
   function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal {
-    token.RCPurchase(_beneficiary, _tokenAmount);
+    crowdSale.RCPurchase.value(msg.value)(_beneficiary, _tokenAmount);
   }
 
   /**
@@ -145,13 +143,14 @@ contract PGORC {
    * @return Number of tokens that can be purchased with the specified _weiAmount
    */
   function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
-    return _weiAmount.mul(rate);
+    uint256 _weiRate = rate / (10 ** uint256(decimals));
+    return _weiAmount.mul(_weiRate);
   }
 
-  /**
-   * @dev Determines how ETH is stored/forwarded on purchases.
-   */
-  function _forwardFunds() internal {
-    wallet.transfer(msg.value);
-  }
+   /**
+    * @dev Determines how ETH is stored/forwarded on purchases.
+    */
+   //function _forwardFunds() internal {
+    // wallet.transfer(msg.value);
+   //}
 }
