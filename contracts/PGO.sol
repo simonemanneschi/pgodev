@@ -17,23 +17,24 @@ using SafeMath for uint256;
   string public constant symbol = "PGO"; // solium-disable-line uppercase
   uint8 public constant decimals = 18; // solium-disable-line uppercase
 
-  uint256 public constant INITIAL_SUPPLY = 100000 * (10 ** uint256(decimals));
+  uint256 public constant INITIAL_SUPPLY = 100000000 * (10 ** uint256(decimals));
 
-  uint256 public constant ICO_SUPPLY = 17000 * (10 ** uint256(decimals));
+  uint256 public constant ICO_SUPPLY = 17000000 * (10 ** uint256(decimals));
 
   //Pre-assignment token distribution
-  uint256 public constant PARTNER_SUPPLY = 10000 * (10 ** uint256(decimals));
-  uint256 public constant FOUNDER_SUPPLY = 10000 * (10 ** uint256(decimals));
-  uint256 public constant ADVISOR_SUPPLY = 3000 * (10 ** uint256(decimals));
-  uint256 public constant FONDOLIQ_SUPPLY = 17000 * (10 ** uint256(decimals));
-  uint256 public constant FONDOAZ_SUPPLY = 35000 * (10 ** uint256(decimals));
-  uint256 public constant PRESALE_SUPPLY = 8000 * (10 ** uint256(decimals));
+  uint256 public constant PARTNER_SUPPLY = 10000000 * (10 ** uint256(decimals));
+  uint256 public constant FOUNDER_SUPPLY = 10000000 * (10 ** uint256(decimals));
+  uint256 public constant ADVISOR_SUPPLY = 3000000 * (10 ** uint256(decimals));
+  uint256 public constant FONDOLIQ_SUPPLY = 17000000 * (10 ** uint256(decimals));
+  uint256 public constant FONDOAZ_SUPPLY = 35000000 * (10 ** uint256(decimals));
+  uint256 public constant PRESALE_SUPPLY = 8000000 * (10 ** uint256(decimals));
   
   //Crowdsale token contract
   address Crowdsale;
   
   /**
-   * @dev Constructor that gives msg.sender all of existing tokens.
+   * @dev Constructor that assign presales and reserved tokens, all 
+   *   ico token are assigned to msg.sender than moved to crowdsale contract.
    */
   function PGO() public {
     totalSupply_ = INITIAL_SUPPLY;
@@ -64,7 +65,7 @@ using SafeMath for uint256;
     emit Transfer(0x0, Pre3, PRESALE_SUPPLY);
     
     balances[msg.sender] = ICO_SUPPLY;
-    emit Transfer(0x0, msg.sender, INITIAL_SUPPLY);
+    emit Transfer(0x0, msg.sender, ICO_SUPPLY);
   }
 
     function SetCrowdSaleAddress(address _crowdSaleContractAddress) public onlyOwner{
