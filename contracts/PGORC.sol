@@ -27,7 +27,7 @@ contract PGORC {
   uint8 public constant decimals = 18; // solium-disable-line uppercase
 
   //How many token units a buyer gets per ether
-  uint256 public constant rate = 1041 * (10 ** uint256(decimals));
+  uint256 public constant rate = 1400 * (10 ** uint256(decimals));
   // Amount of wei raised
   uint256 public weiRaised;
 

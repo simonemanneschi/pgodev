@@ -22,12 +22,12 @@ contract PGOCrowdsale is Whitelist {
 
   uint8 public constant decimals = 18; // solium-disable-line uppercase
   
-  uint256 public constant ICO_SUPPLY_TOKEN = 10000  * (10 ** uint256(decimals));
+  uint256 public constant ICO_SUPPLY_TOKEN = 10000000  * (10 ** uint256(decimals));
 
-  uint256 public constant RC_SUPPLY_TOKEN = 7000  * (10 ** uint256(decimals));
+  uint256 public constant RC_SUPPLY_TOKEN = 7000000  * (10 ** uint256(decimals));
 
   //How many token units a buyer gets per ether
-  uint256 public constant rate = 833 * (10 ** uint256(decimals));
+  uint256 public constant rate = 1120 * (10 ** uint256(decimals));
   
 
   // The token being sold
@@ -64,6 +64,14 @@ contract PGOCrowdsale is Whitelist {
 
     wallet = _wallet;
     token = _token;
+  }
+  
+
+  /**
+  *Function that close the ICO and unlock the token
+  */
+  function SetIcoClosed() public onlyOwner{
+    token.SetIcoClosed();
   }
   
   
@@ -142,6 +150,7 @@ contract PGOCrowdsale is Whitelist {
    * @param _tokenAmount Number of tokens to be purchased
    */
   function _processPurchase(address _beneficiary, uint256 _tokenAmount) internal {
+    require(tokenRaisedICO <= ICO_SUPPLY_TOKEN);
     _deliverTokens(_beneficiary, _tokenAmount);
   }
 
