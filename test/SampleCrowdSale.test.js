@@ -16,7 +16,7 @@ const SampleCrowdsaleToken = artifacts.require('SampleCrowdsaleToken');
 const RefundVault = artifacts.require('RefundVault');
 
 contract('SampleCrowdsale', function ([owner, wallet, investor]) {
-  //const RATE = new BigNumber(10);
+  const RATE = new BigNumber(10);
   const GOAL = ether(10);
   const CAP = ether(20);
 

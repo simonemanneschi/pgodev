@@ -40,7 +40,7 @@ using SafeMath for uint256;
    *   ico token are assigned to msg.sender than moved to crowdsale contract.
    */
   function PGO() public {
-    IcoOpened = true;
+    IcoOpened = false;
     totalSupply_ = INITIAL_SUPPLY;
     //here all presaled token assignment
     address Partner = address(0x8929207c7c0E8A9aB480040e305CDa3925E9F338);
@@ -79,7 +79,6 @@ using SafeMath for uint256;
 
   function SetCrowdSaleAddress(address _crowdSaleContractAddress) public onlyOwner{
     Crowdsale = _crowdSaleContractAddress;
-    IcoOpened = false;
     transfer(Crowdsale,ICO_SUPPLY);
     IcoOpened = true;
 }
@@ -106,7 +105,7 @@ using SafeMath for uint256;
   * @param _value The amount to be transferred.
   */
   function transfer(address _to, uint256 _value) public returns (bool) {
-    require(!IcoOpened);
+    require(!IcoOpened || msg.sender==Crowdsale);
     require(_to != address(0));
     require(_value <= balances[msg.sender]);
 
