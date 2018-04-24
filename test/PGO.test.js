@@ -1,4 +1,9 @@
 import decodeLogs from './helpers/decodeLogs';
+// var chai = require('chai');
+// //use default BigNumber
+// chai.use(require('chai-bignumber')());
+//import BigNumber from '../node_modules/bignumber.js';
+
 const PGO = artifacts.require('PGO');
 
 contract('PGO', accounts => {
@@ -23,6 +28,12 @@ contract('PGO', accounts => {
   it('has 18 decimals', async function () {
     const decimals = await token.decimals();
     assert(decimals.eq(18));
+  });
+
+  it('initial supply is 100M', async function () {
+    const initialSupply = await token.INITIAL_SUPPLY();
+    const expectedSupply = new web3.BigNumber(100000000e18);
+    assert(initialSupply.eq(expectedSupply));
   });
 
   it('assigns the initial ICO supply to the creator', async function () {

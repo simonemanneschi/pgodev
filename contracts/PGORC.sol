@@ -16,18 +16,18 @@ import "./SafeMath.sol";
  * behavior.
  */
 
-contract PGORC {
+contract PGORC { 
   using SafeMath for uint256;
 
   // The crowdsale contract
   PGOCrowdsale public crowdSale;
 
   // Address where funds are collected
-  //address public wallet;
+  address public wallet;
+  uint8 public constant decimals = 18; // solium-disable-line uppercase
 
-   //How many token units a buyer gets per ether
-  uint256 public constant rate = 1041;
-
+  //How many token units a buyer gets per ether
+  uint256 public constant rate = 1041 * (10 ** uint256(decimals));
   // Amount of wei raised
   uint256 public weiRaised;
 
@@ -41,15 +41,15 @@ contract PGORC {
   event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
   /**
-   * @param _token Address of the token being sold
+   * @param _crowdsaleAddress Address of crowdsale contract
    */
-  function PGORC(PGOCrowdsale _token) public {
+  function PGORC(PGOCrowdsale _crowdsaleAddress) public {
     //require(_wallet != address(0));
-    require(_token != address(0));
+    require(_crowdsaleAddress != address(0));
 
     //rate = _rate;
     //wallet = _wallet;
-    crowdSale = _token;
+    crowdSale = _crowdsaleAddress;
   }
 
   // -----------------------------------------
@@ -83,7 +83,6 @@ contract PGORC {
 
     _updatePurchasingState(_beneficiary, weiAmount);
 
-    //not need anymore because crowdsale contract forward the funds
     //_forwardFunds();
     _postValidatePurchase(_beneficiary, weiAmount);
   }
@@ -117,7 +116,7 @@ contract PGORC {
    * @param _tokenAmount Number of tokens to be emitted
    */
   function _deliverTokens(address _beneficiary, uint256 _tokenAmount) internal {
-    crowdSale.RCPurchase(_beneficiary, _tokenAmount);
+    crowdSale.RCPurchase.value(msg.value)(_beneficiary, _tokenAmount);
   }
 
   /**
@@ -144,13 +143,14 @@ contract PGORC {
    * @return Number of tokens that can be purchased with the specified _weiAmount
    */
   function _getTokenAmount(uint256 _weiAmount) internal view returns (uint256) {
-    return _weiAmount.mul(rate);
+    uint256 _weiRate = rate / (10 ** uint256(decimals));
+    return _weiAmount.mul(_weiRate);
   }
 
-  // /**
-  //  * @dev Determines how ETH is stored/forwarded on purchases.
-  //  */
-  // function _forwardFunds() internal {
-  //   wallet.transfer(msg.value);
-  // }
+   /**
+    * @dev Determines how ETH is stored/forwarded on purchases.
+    */
+   //function _forwardFunds() internal {
+    // wallet.transfer(msg.value);
+   //}
 }
