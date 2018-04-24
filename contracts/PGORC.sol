@@ -22,8 +22,6 @@ contract PGORC {
   // The crowdsale contract
   PGOCrowdsale public crowdSale;
 
-  // Address where funds are collected
-  address public wallet;
   uint8 public constant decimals = 18; // solium-disable-line uppercase
 
   //How many token units a buyer gets per ether

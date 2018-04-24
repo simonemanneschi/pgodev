@@ -22,7 +22,7 @@ contract PGOCrowdsale is Whitelist {
 
   uint8 public constant decimals = 18; // solium-disable-line uppercase
   
-  uint256 public constant ICO_SUPPLY_TOKEN = 10000000  * (10 ** uint256(decimals));
+  uint256 public constant ICO_SUPPLY_TOKEN = 89600  * (10 ** uint256(decimals));
 
   uint256 public constant RC_SUPPLY_TOKEN = 7000000  * (10 ** uint256(decimals));
 

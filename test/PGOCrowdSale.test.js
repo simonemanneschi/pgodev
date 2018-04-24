@@ -16,7 +16,7 @@ require('chai')
 const PGOCrowdSale = artifacts.require('PGOCrowdSale');
 const PGO = artifacts.require('PGO');
 
-contract('PGO', accounts => {
+contract('PGOCrowdSale', accounts => {
   //Token for ether rate
   const RATE = new BigNumber(1120);
   //token contract instance placeholder
@@ -77,6 +77,21 @@ contract('PGO', accounts => {
     (await token.balanceOf(buyer)).should.be.bignumber.equal(expectedTokenAmount);
     //(await this.token.totalSupply()).should.be.bignumber.equal(expectedTokenAmount);
   });
+
+    //try to buy some tokens
+    it('must buy all ICOs tokens and fail when tokens are soldout', async function () {
+      let investmentAmount = ether(80);
+      const expectedTokenAmount = RATE.mul(investmentAmount);
+  
+      //await increaseTimeTo(this.openingTime);
+      await crowdSale.buyTokens(buyer, { value: investmentAmount, from: buyer }).should.be.fulfilled;
+  
+      (await token.balanceOf(buyer)).should.be.bignumber.equal(expectedTokenAmount);
+      //(await this.token.totalSupply()).should.be.bignumber.equal(expectedTokenAmount);
+      investmentAmount = ether(1);
+      await crowdSale.buyTokens(buyer, { value: investmentAmount, from: buyer }).should.be.rejected;
+    });
+
   
 
 });
