@@ -26,6 +26,9 @@ contract('PGORC', accounts => {
   let crowdSale;
   //rc contract instance placeholder
   let rc;
+  //rc2 contract instance placeholder
+  let rc2;
+  
   //creator account
   const creator = accounts[0];
   //buyer account
@@ -45,6 +48,9 @@ contract('PGORC', accounts => {
     //deploy RC contract 
     rc = await PGORC.new(crowdSale.address);
     await crowdSale.addAddressToWhitelist(rc.address);
+    rc2 = await PGORC.new(crowdSale.address);
+    await crowdSale.addAddressToWhitelist(rc2.address);
+    
   });
   //check constant amount of reservation contract token supply
   it('has a deployed with correct crowdsale address', async function () {
@@ -62,6 +68,44 @@ contract('PGORC', accounts => {
     await rc.buyTokens(buyer, { value: investmentAmount, from: buyer }).should.be.fulfilled;
 
     (await token.balanceOf(buyer)).should.be.bignumber.equal(expectedTokenAmount);
+    //(await this.token.totalSupply()).should.be.bignumber.equal(expectedTokenAmount);
+  });
+
+   //try to buy some tokens from 2 different RC
+   it('must buy 1400 token each rc, crowdsale must register 2 ether total and 2800 token', async function () {
+    const investmentAmount = ether(1);
+    const expectedTokenAmount = RATE.mul(investmentAmount);
+
+    //await increaseTimeTo(this.openingTime);
+    await rc.buyTokens(buyer, { value: investmentAmount, from: buyer }).should.be.fulfilled;
+
+    (await token.balanceOf(buyer)).should.be.bignumber.equal(expectedTokenAmount);
+
+    await rc2.buyTokens(buyer, { value: investmentAmount, from: buyer }).should.be.fulfilled;
+
+    (await token.balanceOf(buyer)).should.be.bignumber.equal(expectedTokenAmount.mul(2));
+
+    let weiRaisedCrowdSale =  await crowdSale.weiRaisedRC(); 
+    console.log(weiRaisedCrowdSale);
+    console.log(ether(2));
+    assert(weiRaisedCrowdSale.eq(ether(2)));
+
+    let tokenRaised =  await crowdSale.tokenRaisedRC(); 
+    assert(tokenRaised.eq(expectedTokenAmount.mul(2)));
+
+    let weiRaisedRc =  await rc.weiRaised(); 
+    assert(weiRaisedRc.eq(ether(1)));
+
+    let weiRaisedRc2 =  await rc2.weiRaised(); 
+    assert(weiRaisedRc2.eq(ether(1)));
+
+
+
+
+    
+
+
+
     //(await this.token.totalSupply()).should.be.bignumber.equal(expectedTokenAmount);
   });
 
