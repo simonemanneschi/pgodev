@@ -5,8 +5,8 @@ import "./SafeMath.sol";
 import "./Whitelist.sol";
 
 /**
- * @title PGOCrowdsale
- * @dev PGOCrowdsale is a base contract for managing a token crowdsale,
+ * @title PGOCrowdSale
+ * @dev PGOCrowdSale is a base contract for managing a token crowdsale,
  * allowing investors to purchase tokens with ether. This contract implements
  * such functionality in its most fundamental form and can be extended to provide additional
  * functionality and/or custom behavior.
@@ -17,11 +17,19 @@ import "./Whitelist.sol";
  * behavior.
  */
 
-contract PGOCrowdsale is Whitelist {
+contract PGOCrowdSale is Whitelist {
   using SafeMath for uint256;
+
+  /**
+   * Opening and closing variable from timed crowdsale zeppelin. 
+   */
+  uint256 public openingTime;
+  uint256 public closingTime;
+
 
   uint8 public constant decimals = 18; // solium-disable-line uppercase
   
+  //real token distribution must be xxxxxxx 89600 is used for testing
   uint256 public constant ICO_SUPPLY_TOKEN = 89600  * (10 ** uint256(decimals));
 
   uint256 public constant RC_SUPPLY_TOKEN = 7000000  * (10 ** uint256(decimals));
@@ -58,7 +66,11 @@ contract PGOCrowdsale is Whitelist {
    * @param _wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
-  function PGOCrowdsale(address _wallet, PGO _token) public {
+  function PGOCrowdSale(address _wallet, PGO _token,uint256 _openingTime, uint256 _closingTime) public {
+    //check timed crowdsale parameter
+    require(_openingTime >= now);
+    require(_closingTime >= _openingTime);
+     //check crowdsale address
     require(_wallet != address(0));
     require(_token != address(0));
 
@@ -66,6 +78,21 @@ contract PGOCrowdsale is Whitelist {
     token = _token;
   }
   
+
+  /**
+   * @dev Reverts if not in crowdsale time range. 
+   */
+  modifier onlyWhileOpen {
+    require(now >= openingTime && now <= closingTime);
+    _;
+  }
+   /**
+   * @dev Checks whether the period in which the crowdsale is open has already elapsed.
+   * @return Whether crowdsale period has elapsed
+   */
+  function hasClosed() public view returns (bool) {
+    return now > closingTime;
+  }
 
   /**
   *Function that close the ICO and unlock the token
@@ -121,7 +148,7 @@ contract PGOCrowdsale is Whitelist {
    * @param _beneficiary Address performing the token purchase
    * @param _weiAmount Value in wei involved in the purchase
    */
-  function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
+  function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal onlyWhileOpen {
     require(_beneficiary != address(0));
     require(_weiAmount != 0);
   }

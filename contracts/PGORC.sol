@@ -4,8 +4,8 @@ import "./PGOCrowdSale.sol";
 import "./SafeMath.sol";
 
 /**
- * @title PGOCrowdsale
- * @dev PGOCrowdsale is a base contract for managing a token crowdsale,
+ * @title PGOCrowdSale
+ * @dev PGOCrowdSale is a base contract for managing a token crowdsale,
  * allowing investors to purchase tokens with ether. This contract implements
  * such functionality in its most fundamental form and can be extended to provide additional
  * functionality and/or custom behavior.
@@ -19,8 +19,14 @@ import "./SafeMath.sol";
 contract PGORC { 
   using SafeMath for uint256;
 
+  /**
+   * Opening and closing variable from timed crowdsale zeppelin. 
+   */
+  uint256 public openingTime;
+  uint256 public closingTime;
+
   // The crowdsale contract
-  PGOCrowdsale public crowdSale;
+  PGOCrowdSale public crowdSale;
 
   uint8 public constant decimals = 18; // solium-disable-line uppercase
 
@@ -41,13 +47,36 @@ contract PGORC {
   /**
    * @param _crowdsaleAddress Address of crowdsale contract
    */
-  function PGORC(PGOCrowdsale _crowdsaleAddress) public {
-    //require(_wallet != address(0));
+  function PGORC(PGOCrowdSale _crowdsaleAddress,uint256 _openingTime, uint256 _closingTime) public {
+    //check timed crowdsale parameter
+    require(_openingTime >= now);
+    require(_closingTime >= _openingTime);
+    //check crowdsale address
     require(_crowdsaleAddress != address(0));
+
+    openingTime = _openingTime;
+    closingTime = _closingTime;
+    //require(_wallet != address(0));
 
     //rate = _rate;
     //wallet = _wallet;
     crowdSale = _crowdsaleAddress;
+  }
+
+
+ /**
+   * @dev Reverts if not in crowdsale time range. 
+   */
+  modifier onlyWhileOpen {
+    require(now >= openingTime && now <= closingTime);
+    _;
+  }
+   /**
+   * @dev Checks whether the period in which the crowdsale is open has already elapsed.
+   * @return Whether crowdsale period has elapsed
+   */
+  function hasClosed() public view returns (bool) {
+    return now > closingTime;
   }
 
   // -----------------------------------------
@@ -94,7 +123,7 @@ contract PGORC {
    * @param _beneficiary Address performing the token purchase
    * @param _weiAmount Value in wei involved in the purchase
    */
-  function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal {
+  function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal onlyWhileOpen {
     require(_beneficiary != address(0));
     require(_weiAmount != 0);
   }
